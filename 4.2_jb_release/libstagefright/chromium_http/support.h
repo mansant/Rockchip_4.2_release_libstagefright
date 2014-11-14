@@ -59,6 +59,8 @@ private:
     std::string mUserAgent;
 
     DISALLOW_EVIL_CONSTRUCTORS(SfRequestContext);
+
+    bool GetAndroidProxySetting(std::string& strProxy);
 };
 
 // This is required for https support, we don't really verify certificates,

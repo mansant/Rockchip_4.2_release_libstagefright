@@ -181,8 +181,13 @@ SfRequestContext::SfRequestContext() {
     set_ssl_config_service(
         net::SSLConfigService::CreateSystemSSLConfigService());
 
-    set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-        new net::ProxyConfigServiceAndroid, net_log()));
+    std::string proxy;
+    if (GetAndroidProxySetting(proxy)) {
+        set_proxy_service(net::ProxyService::CreateFixed(proxy));
+	} else {
+	    set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
+	  	    new net::ProxyConfigServiceAndroid, net_log()));
+	}
 
     set_http_transaction_factory(new net::HttpCache(
             host_resolver(),
@@ -201,6 +206,22 @@ SfRequestContext::SfRequestContext() {
 
 const std::string &SfRequestContext::GetUserAgent(const GURL &url) const {
     return mUserAgent;
+}
+
+bool SfRequestContext::GetAndroidProxySetting(std::string& strProxy) {
+    bool bResult = false;
+
+    char value[512];
+    property_get("learnpad.proxy", value, "Proxy not specified");
+    if (0 != strcmp(value, "Proxy not specified")) {
+        strProxy = value;
+	    MY_LOGI(StringPrintf("Setting proxy info -> %s", strProxy.c_str()).c_str());
+	    bResult = true;
+	} else {
+	    MY_LOGI("No Proxy specified");
+	}
+    
+	return bResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
